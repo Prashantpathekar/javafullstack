@@ -1,73 +1,77 @@
 import { useState } from "react";
 
-const Card = ({ title, children }) => (
-  <div className="bg-white rounded-lg shadow border p-6">
-    <h2 className="text-lg font-semibold mb-6 border-b pb-3">
-      {title}
-    </h2>
-    {children}
-  </div>
-);
-
-const Features = () => {
+const Features = ({ onNext }) => {
   const [features, setFeatures] = useState([""]);
 
-  const updateFeature = (index, value) => {
+  const handleChange = (index, value) => {
     const updated = [...features];
     updated[index] = value;
     setFeatures(updated);
   };
 
   const addFeature = () => {
-    if (features.length < 5) {
-      setFeatures([...features, ""]);
-    }
+    setFeatures([...features, ""]);
   };
 
   const removeFeature = (index) => {
-    setFeatures(features.filter((_, i) => i !== index));
+    const updated = features.filter((_, i) => i !== index);
+    setFeatures(updated);
+  };
+
+  const handleSaveFeatures = () => {
+    const validFeatures = features.filter((f) => f.trim() !== "");
+
+    if (validFeatures.length === 0) {
+      alert("Please add at least one feature");
+      return;
+    }
+
+    // 👉 later API call (save features)
+    onNext(); // next sidebar step (Images / Review)
   };
 
   return (
-    <Card title="Key Features">
-      <div className="space-y-4">
+    <div className="bg-white p-6 rounded shadow w-[750px]">
+      <h2 className="text-lg font-semibold mb-2">Product Features</h2>
+      <p className="text-sm text-gray-600 mb-4">
+        Add key highlights of your product (shown on product page like Amazon).
+      </p>
 
-        {features.map((feature, index) => (
-          <div key={index} className="flex gap-2">
-            <input
-              type="text"
-              value={feature}
-              onChange={(e) => updateFeature(index, e.target.value)}
-              placeholder={`Feature ${index + 1}`}
-              className="flex-1 border rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-            />
+      {features.map((feature, index) => (
+        <div key={index} className="flex items-center gap-2 mb-3">
+          <input
+            type="text"
+            placeholder={`Feature ${index + 1} (e.g. Solid Sheesham Wood Frame)`}
+            className="border p-2 flex-1"
+            value={feature}
+            onChange={(e) => handleChange(index, e.target.value)}
+          />
 
-            {features.length > 1 && (
-              <button
-                onClick={() => removeFeature(index)}
-                className="px-3 py-2 border text-red-500 rounded"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        ))}
+          {features.length > 1 && (
+            <button
+              onClick={() => removeFeature(index)}
+              className="text-red-600 text-sm"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      ))}
 
-        {features.length < 5 && (
-          <button
-            onClick={addFeature}
-            className="text-blue-600 text-sm font-medium"
-          >
-            + Add another feature
-          </button>
-        )}
+      <button
+        onClick={addFeature}
+        className="mb-4 px-4 py-2 border rounded text-blue-600"
+      >
+        + Add Another Feature
+      </button>
 
-        <p className="text-xs text-gray-500">
-          Add up to 5 bullet points. Keep them short and descriptive.
-        </p>
-
-      </div>
-    </Card>
+      <button
+        onClick={handleSaveFeatures}
+        className="w-full px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Save & Continue →
+      </button>
+    </div>
   );
 };
 

@@ -1,98 +1,136 @@
 import { useState } from "react";
 
-const Card = ({ title, children }) => (
-  <div className="bg-white rounded-lg shadow border p-6">
-    <h2 className="text-lg font-semibold mb-6 border-b pb-3">
-      {title}
-    </h2>
-    {children}
-  </div>
-);
+const Specifications = ({ onNext }) => {
+  const [specs, setSpecs] = useState({
+    productType: "",
+    roomType: "",
+    material: "",
+    finish: "",
+    seatingCapacity: "",
+    storage: "",
+    assembly: "",
+    countryOfOrigin: "",
+    brand: ""
+  });
 
-const Specifications = () => {
-  const [specs, setSpecs] = useState([
-    { key: "", value: "" },
-  ]);
-
-  const updateSpec = (index, field, value) => {
-    const updated = [...specs];
-    updated[index][field] = value;
-    setSpecs(updated);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSpecs({ ...specs, [name]: value });
   };
 
-  const addSpec = () => {
-    setSpecs([...specs, { key: "", value: "" }]);
-  };
+  const handleSaveSpecs = () => {
+    // minimal validation
+    if (!specs.productType || !specs.material) {
+      alert("Please fill required specifications");
+      return;
+    }
 
-  const removeSpec = (index) => {
-    setSpecs(specs.filter((_, i) => i !== index));
+    // 👉 later API call
+    onNext(); // next sidebar step
   };
 
   return (
-    <Card title="Product Specifications">
-      <div className="space-y-4">
+    <div className="bg-white p-6 rounded shadow w-[800px]">
+      <h2 className="text-lg font-semibold mb-4">
+        Product Specifications
+      </h2>
 
-        {/* Table Header */}
-        <div className="grid grid-cols-2 gap-4 text-sm font-medium text-gray-600">
-          <span>Specification</span>
-          <span>Value</span>
-        </div>
+      {/* Product Type & Room Type */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <input
+          name="productType"
+          placeholder="Product Type (Sofa / Bed / Table)"
+          className="border p-2"
+          value={specs.productType}
+          onChange={handleChange}
+        />
 
-        {/* Specification Rows */}
-        {specs.map((spec, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-2 gap-4 items-center"
-          >
-            <input
-              type="text"
-              placeholder="e.g. Material"
-              value={spec.key}
-              onChange={(e) =>
-                updateSpec(index, "key", e.target.value)
-              }
-              className="border rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-            />
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="e.g. Solid Wood"
-                value={spec.value}
-                onChange={(e) =>
-                  updateSpec(index, "value", e.target.value)
-                }
-                className="flex-1 border rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              />
-
-              {specs.length > 1 && (
-                <button
-                  onClick={() => removeSpec(index)}
-                  className="px-3 py-2 border text-red-500 rounded"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {/* Add Row */}
-        <button
-          onClick={addSpec}
-          className="text-blue-600 text-sm font-medium"
-        >
-          + Add another specification
-        </button>
-
-        <p className="text-xs text-gray-500">
-          Add detailed technical information to help customers make informed decisions.
-        </p>
-
+        <input
+          name="roomType"
+          placeholder="Room Type (Living Room / Bedroom)"
+          className="border p-2"
+          value={specs.roomType}
+          onChange={handleChange}
+        />
       </div>
-    </Card>
+
+      {/* Material & Finish */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <input
+          name="material"
+          placeholder="Primary Material"
+          className="border p-2"
+          value={specs.material}
+          onChange={handleChange}
+        />
+
+        <input
+          name="finish"
+          placeholder="Finish Type"
+          className="border p-2"
+          value={specs.finish}
+          onChange={handleChange}
+        />
+      </div>
+
+      {/* Seating & Storage */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <input
+          name="seatingCapacity"
+          placeholder="Seating Capacity"
+          className="border p-2"
+          value={specs.seatingCapacity}
+          onChange={handleChange}
+        />
+
+        <input
+          name="storage"
+          placeholder="Storage (Yes / No)"
+          className="border p-2"
+          value={specs.storage}
+          onChange={handleChange}
+        />
+      </div>
+
+      {/* Assembly */}
+      <select
+        name="assembly"
+        className="border p-2 w-full mb-3"
+        value={specs.assembly}
+        onChange={handleChange}
+      >
+        <option value="">Assembly Required?</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+
+      {/* Country & Brand */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <input
+          name="countryOfOrigin"
+          placeholder="Country of Origin"
+          className="border p-2"
+          value={specs.countryOfOrigin}
+          onChange={handleChange}
+        />
+
+        <input
+          name="brand"
+          placeholder="Brand"
+          className="border p-2"
+          value={specs.brand}
+          onChange={handleChange}
+        />
+      </div>
+
+      <button
+        onClick={handleSaveSpecs}
+        className="w-full px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Save & Continue →
+      </button>
+    </div>
   );
 };
 
 export default Specifications;
-

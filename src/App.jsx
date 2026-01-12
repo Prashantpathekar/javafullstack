@@ -1,9 +1,12 @@
-import Routers from "./Routers"
-const App=()=>{
-    return(
-        <>
-        <Routers/>
-        </>
-    )
+import { ProductProvider } from "./seller/ProductContext";
+import Routers from "./Routers";
+
+function App() {
+  return (
+    <ProductProvider>
+      <Routers />
+    </ProductProvider>
+  );
 }
+
 export default App;

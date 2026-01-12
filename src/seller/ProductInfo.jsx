@@ -1,57 +1,117 @@
-const Card = ({ title, children }) => {
+import { useState } from "react";
+import api from "./api";
+
+const ProductInfo = ({ productId, data, onChange, onNext, onPrev }) => {
+  const [form, setForm] = useState({
+    name: data?.name || "",
+    slug: data?.slug || "",
+    description: data?.description || "",
+    price: data?.price || ""
+  });
+
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!productId) {
+      alert("Product not found ❌");
+      return;
+    }
+
+    if (!form.name.trim()) {
+      alert("Product name required ❗");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      // 🔥 FIXED URL
+      const res = await api.put(`/products/${productId}/info`, {
+        name: form.name,
+        slug: form.slug,
+        description: form.description,
+        price: form.price
+      });
+
+      // ✅ update parent state (optional)
+      onChange(res.data);
+
+      onNext(); // 👉 Attributes step
+
+    } catch (err) {
+      console.error("❌ ProductInfo save failed", err);
+      alert("Failed to save product info ❌");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow border p-6">
-      <h2 className="text-lg font-semibold mb-6 border-b pb-3">
-        {title}
+    <div className="bg-white p-6 rounded shadow w-[700px]">
+      <h2 className="text-lg font-semibold mb-4">
+        Product Information
       </h2>
-      {children}
-    </div>
-  );
-};
 
-const ProductInfo = () => {
-  return (
-    <Card title="Product Information">
-      <div className="space-y-5">
+      <input
+        name="name"
+        placeholder="Product Name"
+        className="border p-2 w-full mb-3"
+        value={form.name}
+        onChange={handleChange}
+      />
 
-        {/* Product Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Product Title
-          </label>
-          <input
-            type="text"
-            placeholder="Enter product title"
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-        </div>
+      <input
+        name="slug"
+        placeholder="Slug (auto / manual)"
+        className="border p-2 w-full mb-3"
+        value={form.slug}
+        onChange={handleChange}
+      />
 
-        {/* Short Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Short Description
-          </label>
-          <textarea
-            rows={3}
-            placeholder="Enter short description"
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-          />
-        </div>
+      <textarea
+        name="description"
+        placeholder="Product Description"
+        className="border p-2 w-full mb-3"
+        rows={4}
+        value={form.description}
+        onChange={handleChange}
+      />
 
-        {/* Full Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full Description
-          </label>
-          <textarea
-            rows={5}
-            placeholder="Enter full product description"
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-        </div>
+      <input
+        type="number"
+        name="price"
+        placeholder="Base Price"
+        className="border p-2 w-full mb-4"
+        value={form.price}
+        onChange={handleChange}
+      />
 
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onPrev}
+          className="px-4 py-2 border rounded"
+        >
+          ← Back
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className={`px-4 py-2 text-white rounded ${
+            saving ? "bg-gray-400" : "bg-blue-600"
+          }`}
+        >
+          {saving ? "Saving..." : "Save & Continue →"}
+        </button>
       </div>
-    </Card>
+    </div>
   );
 };
 

@@ -1,89 +1,179 @@
 import { useState } from "react";
+import api from "./api";
 
-const Card = ({ title, children }) => (
-  <div className="bg-white rounded-lg shadow border p-6">
-    <h2 className="text-lg font-semibold mb-6 border-b pb-3">
-      {title}
-    </h2>
-    {children}
-  </div>
-);
+const createEmptyVariant = () => ({
+  color: "",
+  material: "",
+  size: "",
+  finish: "",
+  price: "",
+  stock: ""
+});
 
-const Variants = () => {
-  const [variantType, setVariantType] = useState("");
-  const [variantValue, setVariantValue] = useState("");
-  const [variants, setVariants] = useState([]);
+const Variants = ({ productId, onNext, onSelectVariant }) => {
+  const [variants, setVariants] = useState([createEmptyVariant()]);
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = (index, field, value) => {
+    setVariants((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value };
+      return copy;
+    });
+  };
 
   const addVariant = () => {
-    if (!variantType || !variantValue) return;
+    setVariants((prev) => [...prev, createEmptyVariant()]);
+  };
 
-    setVariants([...variants, { type: variantType, value: variantValue }]);
-    setVariantValue("");
+  const removeVariant = (index) => {
+    setVariants((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSave = async () => {
+    if (!productId) {
+      alert("Product not found ❌");
+      return;
+    }
+
+    for (let v of variants) {
+      if (!v.price || !v.stock) {
+        alert("Price & Stock are required ❗");
+        return;
+      }
+    }
+
+    try {
+      setSaving(true);
+
+      const res = await api.post(
+        `/products/${productId}/variants`,
+        variants.map((v) => ({
+          color: v.color,
+          material: v.material,
+          size: v.size,
+          finish: v.finish,
+          price: Number(v.price),
+          stock: Number(v.stock)
+        }))
+      );
+
+      // ✅ FIRST set variantId (for pricing step)
+      if (onSelectVariant && res.data?.length) {
+        onSelectVariant(res.data[0].id);
+      }
+
+      console.log("✅ Variants saved successfully");
+
+      // ✅ THEN move to next step
+      onNext();
+
+    } catch (error) {
+      console.error("❌ Variant save failed", error.response?.data || error);
+      alert("Variants save failed ❌");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <Card title="Variants">
-      <div className="space-y-4">
+    <div className="bg-white p-6 rounded shadow w-[900px]">
+      <h2 className="text-lg font-semibold mb-4">
+        Product Variants
+      </h2>
 
-        {/* Variant Type */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Variant Type
-          </label>
-          <select
-            value={variantType}
-            onChange={(e) => setVariantType(e.target.value)}
-            className="w-64 border rounded px-3 py-2"
-          >
-            <option value="">Select</option>
-            <option value="Color">Color</option>
-            <option value="Size">Size</option>
-            <option value="Material">Material</option>
-          </select>
-        </div>
+      {variants.map((v, index) => (
+        <div
+          key={index}
+          className="grid grid-cols-6 gap-3 mb-4 p-3 border rounded"
+        >
+          <input
+            placeholder="Color"
+            className="border p-2"
+            value={v.color}
+            onChange={(e) =>
+              handleChange(index, "color", e.target.value)
+            }
+          />
 
-        {/* Variant Value */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Variant Value
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={variantValue}
-              onChange={(e) => setVariantValue(e.target.value)}
-              placeholder="e.g. Red, Large"
-              className="border rounded px-3 py-2 w-64"
-            />
+          <input
+            placeholder="Material"
+            className="border p-2"
+            value={v.material}
+            onChange={(e) =>
+              handleChange(index, "material", e.target.value)
+            }
+          />
+
+          <input
+            placeholder="Size"
+            className="border p-2"
+            value={v.size}
+            onChange={(e) =>
+              handleChange(index, "size", e.target.value)
+            }
+          />
+
+          <input
+            placeholder="Finish"
+            className="border p-2"
+            value={v.finish}
+            onChange={(e) =>
+              handleChange(index, "finish", e.target.value)
+            }
+          />
+
+          <input
+            type="number"
+            placeholder="Price"
+            className="border p-2"
+            value={v.price}
+            onChange={(e) =>
+              handleChange(index, "price", e.target.value)
+            }
+          />
+
+          <input
+            type="number"
+            placeholder="Stock"
+            className="border p-2"
+            value={v.stock}
+            onChange={(e) =>
+              handleChange(index, "stock", e.target.value)
+            }
+          />
+
+          {variants.length > 1 && (
             <button
-              onClick={addVariant}
-              className="px-4 py-2 border border-blue-500 text-blue-500 rounded"
+              type="button"
+              onClick={() => removeVariant(index)}
+              className="col-span-6 text-red-600 text-sm"
             >
-              Add
+              Remove Variant
             </button>
-          </div>
+          )}
         </div>
+      ))}
 
-        {/* Variant List */}
-        {variants.length > 0 && (
-          <div>
-            <p className="text-sm font-medium mb-2">Added Variants</p>
-            <div className="flex flex-wrap gap-2">
-              {variants.map((v, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 bg-gray-100 border rounded text-sm"
-                >
-                  {v.type}: {v.value}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+      <button
+        type="button"
+        onClick={addVariant}
+        className="mb-4 px-4 py-2 border rounded"
+      >
+        + Add Variant
+      </button>
 
-
-      </div>
-    </Card>
+      <button
+        type="button"
+        disabled={saving}
+        onClick={handleSave}
+        className={`w-full px-4 py-2 text-white rounded ${
+          saving ? "bg-gray-400" : "bg-blue-600"
+        }`}
+      >
+        {saving ? "Saving..." : "Save Variants & Continue →"}
+      </button>
+    </div>
   );
 };
 

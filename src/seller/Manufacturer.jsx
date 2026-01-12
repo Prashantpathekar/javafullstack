@@ -1,85 +1,130 @@
-const Card = ({ title, children }) => (
-  <div className="bg-white rounded-lg shadow border p-6">
-    <h2 className="text-lg font-semibold mb-6 border-b pb-3">
-      {title}
-    </h2>
-    {children}
-  </div>
-);
+import { useState } from "react";
 
-const Manufacturer = () => {
+const Manufacturer = ({ onNext }) => {
+  const [manufacturer, setManufacturer] = useState({
+    manufacturerName: "",
+    brandOwner: "",
+    address: "",
+    city: "",
+    state: "",
+    country: "India",
+    pincode: "",
+    contactNumber: "",
+    email: ""
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setManufacturer({ ...manufacturer, [name]: value });
+  };
+
+  const handleSaveManufacturer = () => {
+    if (
+      !manufacturer.manufacturerName ||
+      !manufacturer.address ||
+      !manufacturer.city ||
+      !manufacturer.state
+    ) {
+      alert("Please fill required manufacturer details");
+      return;
+    }
+
+    // 👉 later API call (save manufacturer details)
+    onNext(); // next sidebar step (Images / Review)
+  };
+
   return (
-    <Card title="Manufacturer Details">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div className="bg-white p-6 rounded shadow w-[800px]">
+      <h2 className="text-lg font-semibold mb-2">
+        Manufacturer Details
+      </h2>
+      <p className="text-sm text-gray-600 mb-4">
+        This information will be displayed on the product page as required by law.
+      </p>
 
-        {/* Manufacturer Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Manufacturer Name
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. ABC Furniture Pvt Ltd"
-            className="w-full border rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
+      <input
+        name="manufacturerName"
+        placeholder="Manufacturer Name"
+        className="border p-2 w-full mb-3"
+        value={manufacturer.manufacturerName}
+        onChange={handleChange}
+      />
 
-        {/* Brand Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Brand Name
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. UrbanWood"
-            className="w-full border rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
+      <input
+        name="brandOwner"
+        placeholder="Brand Owner / Packer / Importer (if different)"
+        className="border p-2 w-full mb-3"
+        value={manufacturer.brandOwner}
+        onChange={handleChange}
+      />
 
-        {/* Country of Origin */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Country of Origin
-          </label>
-          <select className="w-full border rounded px-3 py-2">
-            <option value="">Select country</option>
-            <option value="India">India</option>
-            <option value="China">China</option>
-            <option value="Vietnam">Vietnam</option>
-          </select>
-        </div>
+      <textarea
+        name="address"
+        placeholder="Complete Address"
+        className="border p-2 w-full mb-3"
+        rows={3}
+        value={manufacturer.address}
+        onChange={handleChange}
+      />
 
-        {/* Importer Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Importer Name (if applicable)
-          </label>
-          <input
-            type="text"
-            placeholder="Importer name"
-            className="w-full border rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-
-        {/* Manufacturer Address */}
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Manufacturer Address
-          </label>
-          <textarea
-            rows={3}
-            placeholder="Full manufacturer address"
-            className="w-full border rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <input
+          name="city"
+          placeholder="City"
+          className="border p-2"
+          value={manufacturer.city}
+          onChange={handleChange}
+        />
+        <input
+          name="state"
+          placeholder="State"
+          className="border p-2"
+          value={manufacturer.state}
+          onChange={handleChange}
+        />
       </div>
 
-      {/* Compliance Hint */}
-      <p className="text-xs text-gray-500 mt-4">
-        Manufacturer details are required for legal compliance and customer transparency.
-      </p>
-    </Card>
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <input
+          name="pincode"
+          placeholder="Pincode"
+          className="border p-2"
+          value={manufacturer.pincode}
+          onChange={handleChange}
+        />
+        <input
+          name="country"
+          placeholder="Country"
+          className="border p-2"
+          value={manufacturer.country}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <input
+          name="contactNumber"
+          placeholder="Contact Number (optional)"
+          className="border p-2"
+          value={manufacturer.contactNumber}
+          onChange={handleChange}
+        />
+        <input
+          name="email"
+          placeholder="Email (optional)"
+          className="border p-2"
+          value={manufacturer.email}
+          onChange={handleChange}
+        />
+      </div>
+
+      <button
+        onClick={handleSaveManufacturer}
+        className="w-full px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Save & Continue →
+      </button>
+    </div>
   );
 };
 

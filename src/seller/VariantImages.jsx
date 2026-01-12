@@ -1,100 +1,81 @@
 import { useState } from "react";
 
-const Card = ({ title, children }) => (
-  <div className="bg-white rounded-lg shadow border p-6">
-    <h2 className="text-lg font-semibold mb-6 border-b pb-3">
-      {title}
-    </h2>
-    {children}
-  </div>
-);
+const VariantImages = ({ variants = [], onNext }) => {
+  // example variants:
+  // [{ id: 1, color: "Brown" }, { id: 2, color: "Grey" }]
 
-const VariantImages = () => {
-  const [variant, setVariant] = useState("");
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState({}); 
+  // { variantId: [File, File] }
 
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    setImages((prev) => [...prev, ...files]);
+  const handleImageChange = (variantId, files) => {
+    setImages({
+      ...images,
+      [variantId]: Array.from(files)
+    });
   };
 
-  const removeImage = (index) => {
-    setImages(images.filter((_, i) => i !== index));
+  const handleSaveImages = () => {
+    if (variants.length === 0) {
+      alert("No variants found");
+      return;
+    }
+
+    // optional validation
+    const firstVariant = variants[0];
+    if (!images[firstVariant.id] || images[firstVariant.id].length === 0) {
+      alert("Please upload images for at least one variant");
+      return;
+    }
+
+    // 👉 later API call (multipart upload)
+    console.log("Variant Images:", images);
+
+    onNext(); // next sidebar step (Images / Review / Publish)
   };
 
   return (
-    <Card title="Variant Images">
-      <div className="space-y-5">
+    <div className="bg-white p-6 rounded shadow w-[800px]">
+      <h2 className="text-lg font-semibold mb-2">
+        Variant Images
+      </h2>
+      <p className="text-sm text-gray-600 mb-4">
+        Upload images for each variant. These images will change when customers select a variant.
+      </p>
 
-        {/* Variant Selector */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Variant
-          </label>
-          <select
-            value={variant}
-            onChange={(e) => setVariant(e.target.value)}
-            className="w-64 border rounded px-3 py-2"
-          >
-            <option value="">Select variant</option>
-            <option value="Red">Red</option>
-            <option value="Blue">Blue</option>
-            <option value="Large">Large</option>
-          </select>
-        </div>
-
-        {/* Upload Box */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Upload Images for Variant
-          </label>
+      {variants.map((variant) => (
+        <div
+          key={variant.id}
+          className="border rounded p-4 mb-4"
+        >
+          <h3 className="font-medium mb-2">
+            Variant: {variant.color || variant.name}
+          </h3>
 
           <input
             type="file"
             multiple
-            onChange={handleImageUpload}
-            className="block w-full text-sm text-gray-600"
+            accept="image/*"
+            className="border p-2 w-full"
+            onChange={(e) =>
+              handleImageChange(variant.id, e.target.files)
+            }
           />
 
-          <p className="text-xs text-gray-500 mt-1">
-            Upload at least 1 main image per variant. JPG/PNG only.
-          </p>
+          {images[variant.id] && (
+            <p className="text-sm text-green-600 mt-2">
+              {images[variant.id].length} image(s) selected
+            </p>
+          )}
         </div>
+      ))}
 
-        {/* Preview Images */}
-        {images.length > 0 && (
-          <div>
-            <p className="text-sm font-medium mb-2">Uploaded Images</p>
-            <div className="flex flex-wrap gap-4">
-              {images.map((img, index) => (
-                <div
-                  key={index}
-                  className="relative w-24 h-24 border rounded overflow-hidden"
-                >
-                  <img
-                    src={URL.createObjectURL(img)}
-                    alt="variant"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-white text-red-500 rounded-full text-xs px-1"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Info */}
-        <p className="text-xs text-gray-500">
-          Each variant must have its own images to help customers choose correctly.
-        </p>
-
-      </div>
-    </Card>
+      <button
+        onClick={handleSaveImages}
+        className="w-full px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Save & Continue →
+      </button>
+    </div>
   );
 };
 
