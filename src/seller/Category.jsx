@@ -1,112 +1,72 @@
-import { useEffect, useState } from "react";
-import api from "./api";
+import React, { useEffect, useState } from "react";
+import api from "../Apis/api";
+import { useNavigate } from "react-router-dom";
 
-const Category = ({ value, onChange, onNext }) => {
+const Category = () => {
+  const navigate = useNavigate();
+
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [breadcrumb, setBreadcrumb] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
+  // 🔹 categories load
   useEffect(() => {
-    api.get("/categories")
-      .then(res => {
-        setCategories(res.data);
-        setLoading(false);
+    api.get("/category")
+      .then((res) => {
+        setCategories(res.data.data);
       })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
+      .catch((err) => {
+        console.error("Category load error", err);
       });
   }, []);
 
-  const handlePreview = async () => {
-    if (!value) {
-      alert("Please select a category ❗");
-      return;
-    }
-
-    try {
-      const res = await api.get(`/categories/breadcrumb/${value}`);
-      const path = res.data.map(c => c.name).join(" > ");
-      setBreadcrumb(path);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to load breadcrumb ❌");
-    }
-  };
-
+  // 🔹 SAVE + NEXT
   const handleNext = async () => {
-    if (!value) {
-      alert("Please select a category");
+    if (!selectedCategory) {
+      alert("Please select category");
       return;
     }
 
     try {
-      const res = await api.post("/products", {
-        categoryId: value
+      console.log("Saving category...");
+
+      const res = await api.post("/product/draft/category", {
+        categoryId: selectedCategory,
       });
 
-      const productId = res.data.id;
+      console.log("Saved:", res.data);
 
-      onNext(productId); // ✅ STEP CHANGE
+      // 🔴 YAHAN STORE KARNA HAI
+      localStorage.setItem("draftId", res.data.draftId);
 
-    } catch (err) {
-      console.error(err);
-      alert("Failed to save category ❌");
+      // 🔴 YAHAN NAVIGATE KARNA HAI
+      navigate("/seller/AdminProduct/brand");
+
+    } catch (error) {
+      console.error("Save error", error);
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded shadow w-[600px]">
-      <h2 className="text-lg font-semibold mb-4">Select Category</h2>
+    <div>
+      <h2>Select Category</h2>
 
-      {loading ? (
-        <p>Loading categories...</p>
-      ) : (
-        <select
-          className="border p-2 w-full mb-4"
-          value={value || ""}
-          onChange={(e) => {
-            onChange(Number(e.target.value));
-            setBreadcrumb("");
-          }}
-        >
-          <option value="" disabled>
-            Select Final Category
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+      >
+        <option value="">Select Category</option>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
           </option>
+        ))}
+      </select>
 
-          {categories.map(c => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      )}
+      <br /><br />
 
-      {breadcrumb && (
-        <div className="mb-4 p-3 bg-gray-100 rounded text-sm text-gray-700">
-          📍 <strong>Category Path:</strong> {breadcrumb}
-        </div>
-      )}
-
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={handlePreview}
-          className="px-4 py-2 border border-blue-600 text-blue-600 rounded"
-        >
-          PREVIEW BREADCRUMB
-        </button>
-
-        {breadcrumb && (
-          <button
-            type="button"
-            onClick={handleNext}
-            className="px-4 py-2 bg-green-600 text-white rounded"
-          >
-            NEXT
-          </button>
-        )}
-      </div>
+      <button onClick={handleNext}>
+        Save & Continue
+      </button>
     </div>
   );
 };

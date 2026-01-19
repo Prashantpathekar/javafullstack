@@ -41,7 +41,7 @@ navigate("/");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-700">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8">
 
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function Register() {
-  const [isLogin, setIsLogin] = useState(false); // 🔁 TOGGLE
+  const [isLogin, setIsLogin] = useState(false);
   const [username, setUsername] = useState("");
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -13,8 +13,10 @@ function Register() {
 
   const navigate = useNavigate();
 
-  // ✅ REGISTER
+  // ================= REGISTER =================
   const register = async () => {
+    if (loading) return; // ✅ double click stop
+
     if (!username || !email || !phone || !password) {
       alert("All fields are required");
       return;
@@ -30,19 +32,37 @@ function Register() {
         password,
       });
 
+      // ✅ FIRST CALL SUCCESS
       localStorage.setItem("email", email);
       localStorage.setItem("phone", phone);
 
       navigate("/verify-email", { state: { email } });
+      return;
+
     } catch (err) {
-      alert(err.response?.data || "Register failed");
+      // ✅ REACT DEV MODE SECOND CALL (409)
+      if (err.response?.status === 409) {
+        navigate("/verify-email", { state: { email } });
+        return;
+      }
+
+      // ❌ REAL ERRORS ONLY
+      if (err.response?.data) {
+        alert(
+          typeof err.response.data === "string"
+            ? err.response.data
+            : err.response.data.message || "Register failed"
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ LOGIN
+  // ================= LOGIN =================
   const login = async () => {
+    if (loading) return;
+
     if (!emailOrPhone || !password) {
       alert("Email/Phone & password required");
       return;
@@ -59,7 +79,11 @@ function Register() {
       localStorage.setItem("token", res.data.token);
       navigate("/Navbar");
     } catch (err) {
-      alert(err.response?.data?.message || "Invalid credentials");
+      alert(
+        typeof err.response?.data === "string"
+          ? err.response.data
+          : err.response?.data?.message || "Invalid credentials"
+      );
     } finally {
       setLoading(false);
     }
@@ -68,13 +92,10 @@ function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-10">
-
-        {/* TITLE */}
         <h2 className="text-3xl font-bold text-center text-indigo-600 mb-8">
           {isLogin ? "Login" : "Register"}
         </h2>
 
-        {/* REGISTER FORM */}
         {!isLogin && (
           <>
             <input
@@ -100,7 +121,6 @@ function Register() {
           </>
         )}
 
-        {/* LOGIN INPUT */}
         {isLogin && (
           <input
             type="text"
@@ -110,7 +130,6 @@ function Register() {
           />
         )}
 
-        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password"
@@ -118,21 +137,16 @@ function Register() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* BUTTON */}
         <button
           onClick={isLogin ? login : register}
           disabled={loading}
           className="w-full py-3 rounded-xl text-white text-lg font-semibold
-                     bg-gradient-to-r from-indigo-500 to-purple-500"
+                     bg-gradient-to-r from-indigo-500 to-purple-500
+                     disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading
-            ? "Please wait..."
-            : isLogin
-            ? "Login"
-            : "Register"}
+          {loading ? "Please wait..." : isLogin ? "Login" : "Register"}
         </button>
 
-        {/* TOGGLE LINK */}
         <p className="text-center mt-6 text-gray-600">
           {isLogin ? "New user?" : "Already registered?"}{" "}
           <span
@@ -142,7 +156,6 @@ function Register() {
             {isLogin ? "Register" : "Login"}
           </span>
         </p>
-
       </div>
     </div>
   );
